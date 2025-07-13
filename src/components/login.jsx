@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { School, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import Dashboard from "./Dashboard";
+import { Eye, EyeOff, Lock, Mail, School } from "lucide-react";
+import { useEffect, useState } from "react";
 
+import Dashboard from "./Dashboard";
 
 const Login = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -10,10 +10,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const backgroundImages = [
-    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=1920&h=1080&fit=crop",
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1920&h=1080&fit=crop",
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1920&h=1080&fit=crop",
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&h=1080&fit=crop"
+    "https://www.ispsctagudin.info/library/img/campus.jpg",
+    "https://ispsc.edu.ph/file-manager/images/News2022/Tagudin/Picture11.jpg",
+    "https://ispsc.edu.ph/file-manager/images/News2022/Tagudin/Picture13.jpg"
   ];
 
   useEffect(() => {

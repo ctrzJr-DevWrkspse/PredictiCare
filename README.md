@@ -14,21 +14,14 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 ## Dependencies:
-npm install
+npm install - after this install, try and run if working all imports.
+
 npm install react-dom
 npm install react-router-dom
 npm install chart.js
 npm install react-chartjs-2
 npm install bootsrap
+npm install react-icons
+npm install sweetalert2
 
-## Dev Dependencies
-npm install -D @types/react 
-npm install -D @types/react-dom 
-npm install -D @vitejs/plugin-react
-npm install -D autoprefixer 
-npm install -D eslint
-npm install -D eslint-plugin-react
-npm install -D eslint-plugin-react-hooks
-npm install -D eslint-plugin-react-refresh
-npm install -D postcss 
-npm install -D vite
+

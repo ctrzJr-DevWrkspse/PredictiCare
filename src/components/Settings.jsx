@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
+
 import Header from './Header';
+import Sidebar from './Sidebar';
 
 const Settings = ({ onThemeToggle, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('general');
@@ -61,26 +62,26 @@ const Settings = ({ onThemeToggle, onNavigate }) => {
               <div className="space-y-4">
                 {/* System Name */}
                 <div className="mb-3">
-                  <label htmlFor="systemName" className="form-label text-secondary">System Name:</label> 
+                  <label htmlFor="nurse" className="form-label text-secondary">Nurse Name:</label> 
                   <input 
                     type="text" 
-                    id="systemName" 
-                    name="systemName" 
+                    id="nurseName" 
+                    name="nurseName" 
                     className="form-control" 
-                    placeholder="Enter system name"
+                    placeholder="Enter nurse name"
                   />
                 </div>
               </div>
               <div className="space-y-4">
                 {/* School Name */}
                 <div className="mb-3">
-                  <label htmlFor="schoolName:" className="form-label text-secondary">School Name:</label> 
+                  <label htmlFor="schoolName:" className="form-label text-secondary">Campus Name:</label> 
                   <input 
                     type="text" 
-                    id="schoolName" 
-                    name="schoolName" 
+                    id="campusName" 
+                    name="campuslName" 
                     className="form-control" 
-                    placeholder="Enter school name:"
+                    placeholder="Enter campus name:"
                   />
                 </div>
               </div>

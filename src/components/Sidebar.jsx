@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 
-
 const Sidebar = ({ onNavigate }) => {
   const location = useLocation();
   const navItems = [
@@ -9,7 +8,7 @@ const Sidebar = ({ onNavigate }) => {
       id: 'dashboard',
       href: '/dashboard',
       icon: 'bx bx-home-alt',
-      label: 'Dashboard Overview'
+      label: 'Dashboard'
     },
     {
       id: 'patients',
@@ -33,7 +32,7 @@ const Sidebar = ({ onNavigate }) => {
       id: 'settings',
       href: '/settings',
       icon: 'bx bx-cog',
-      label: 'System Configuration'
+      label: 'Settings'
     },
     {
       id: 'logout',
@@ -52,7 +51,7 @@ const Sidebar = ({ onNavigate }) => {
           className="mx-auto" 
           style={{ height: '9rem' }} 
         />
-        <h1 className="h4 fw-bold mt-2">Smart Monitoring</h1>
+        <h1 className="h4 fw-bold mt-2">PredictiCare</h1>
         <p className="text-black fw-bold small">Ilocos Sur Polytechnic State College
           <span className='fw-lighter'  >- Tagudin Campus</span></p>
       </div>

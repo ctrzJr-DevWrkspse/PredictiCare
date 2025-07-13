@@ -1,21 +1,22 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import {
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Title,
+  Tooltip,
+} from 'chart.js';
+import { Route, BrowserRouter as Router, Routes, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+
 import Analytics from './components/Analytics';
 import Dashboard from './components/Dashboard';
+import Login from './components/login';
 import Patients from './components/Patients';
 import Reports from './components/Reports';
 import Settings from './components/Settings';
-import Login from './components/login';
-// Chart.js registration
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function App() {

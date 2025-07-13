@@ -1,5 +1,4 @@
-*{
-    border-radius: 50%;
-    color: #970000;
-    color: #006400;
-}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

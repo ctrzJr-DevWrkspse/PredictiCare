@@ -13,22 +13,30 @@ const Analytics = ({ onNavigate }) => {
           <p className="text-secondary">This is the Analytics page component with charts and data visualization.</p> 
           
           {/* Placeholder for charts */}
-          <div className="mt-4 row row-cols-1 row-cols-md-3 row-cols-lg-5 justify-content-center"> 
+          <div className="mt-4 row row-cols-1 row-cols-md-3 row-cols-lg-4 justify-content-center"> 
             <div className="bg-info-subtle rounded-3 p-3 m-2"> 
               <h3 className="fs-5 fw-medium text-info-emphasis">Total Patients</h3> 
-              <p className="fs-2 fw-bold text-info">1,247</p>
+              <p className="fs-2 fw-bold text-info">1,277</p>
             </div>
             <div className="bg-success-subtle rounded-3 p-3 m-2"> 
-              <h3 className="fs-5 fw-medium text-success-emphasis">Active Cases</h3>
+              <h3 className="fs-5 fw-medium text-success-emphasis">SHS</h3>
               <p className="fs-2 fw-bold text-success">89</p>
             </div>
             <div className="bg-warning-subtle rounded-3 p-3 m-2">
-              <h3 className="fs-5 fw-medium text-warning-emphasis">Recovered</h3> 
+              <h3 className="fs-5 fw-medium text-warning-emphasis">4th Year</h3> 
               <p className="fs-2 fw-bold text-warning">1,158</p> 
             </div>
             <div className="bg-danger-subtle rounded-3 p-3 m-2">
-              <h3 className="fs-5 fw-medium text-danger-emphasis">Critical</h3> 
+              <h3 className="fs-5 fw-medium text-danger-emphasis">3rd Year</h3> 
               <p className="fs-2 fw-bold text-danger">12</p> 
+            </div>
+            <div className="bg-warning-subtle rounded-3 p-3 m-2">
+              <h3 className="fs-5 fw-medium text-danger-emphasis">2nd Year</h3> 
+              <p className="fs-2 fw-bold text-danger">10</p> 
+            </div>
+            <div className="bg-info-subtle rounded-3 p-3 m-2">
+              <h3 className="fs-5 fw-medium text-danger-emphasis">1st Year</h3> 
+              <p className="fs-2 fw-bold text-danger">20</p> 
             </div>
           </div>
         </div>
