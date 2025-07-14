@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from 'react';
 
 import Sidebar from './Sidebar';
@@ -108,7 +105,7 @@ const Patients = ({ onNavigate }) => {
     setError(null);
     setResult(null);
     try {
-      const response = await fetch('http://localhost:5000/predict', {
+      const response = await fetch('apipredict-production.up.railway.app', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
