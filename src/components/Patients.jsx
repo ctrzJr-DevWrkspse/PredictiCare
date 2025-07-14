@@ -156,7 +156,7 @@ const Patients = ({ onNavigate }) => {
     
     try {
       // Get prediction first
-      const response = await fetch('https://apipredict-production.up.railway.app', {
+      const response = await fetch('http://localhost:5000/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -227,7 +227,7 @@ const Patients = ({ onNavigate }) => {
       setError(null);
       setResult(null);
       try {
-        const response = await fetch('https://apipredict-production.up.railway.app', {
+        const response = await fetch('http://localhost:5000/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
