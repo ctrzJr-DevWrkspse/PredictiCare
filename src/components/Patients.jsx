@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
 
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import { v4 as uuidv4 } from 'uuid';
+import { PatientViewModal, PatientFormModal } from './modals';
 
 // List of all possible symptoms (from the API's MEDICAL_DB)
 const ALL_SYMPTOMS = [
@@ -36,6 +39,7 @@ const Patients = ({ onNavigate }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [personal, setPersonal] = useState({
+    idNo: '',
     firstName: '',
     lastName: '',
     extension: '',
@@ -55,13 +59,15 @@ const Patients = ({ onNavigate }) => {
   });
   const [ setPersonalError] = useState(null);
   const [savedRecords, setSavedRecords] = useState([]);
-  const [saveMsg, setSaveMsg] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [ setExpandedSections] = useState({
     academic: true,
     emergency: true,
     medical: true,
   });
+  const [viewPatient, setViewPatient] = useState(null); // NEW: for viewing patient info
+  const [editPatientId, setEditPatientId] = useState(null); // for editing
+  const [otherSymptoms, setOtherSymptoms] = useState(''); // for free-text symptoms
 
   const showAlertMessage = (message) => {
     console.log('showAlertMessage called with:', message);
@@ -96,20 +102,15 @@ const Patients = ({ onNavigate }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setPersonalError(null);
-    // Only validate symptoms for prediction
-    if (selected.length === 0) {
-      setError('Please select at least one symptom to predict.');
-      return;
-    }
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const response = await fetch('https://apipredict-production.up.railway.app/predict', {
+      const response = await fetch('http://localhost:5000/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          symptoms: selected,
+          symptoms: [...selected, otherSymptoms].filter(s => s), // Filter out empty strings
           personal,
         }),
       });
@@ -127,6 +128,7 @@ const Patients = ({ onNavigate }) => {
     // Validate all personal info for saving records
     if (!personal.firstName || !personal.lastName || !personal.age || !personal.gender || !personal.contact || !personal.course || !personal.year || !personal.section || !personal.civilStatus || !personal.religion || !personal.emergencyName || !personal.emergencyContact || !personal.address || !personal.bloodType) {
       const missingFields = [];
+      if (!personal.idNo) missingFields.push('ID no.');
       if (!personal.firstName) missingFields.push('First Name');
       if (!personal.lastName) missingFields.push('Last Name');
       if (!personal.age) missingFields.push('Age');
@@ -145,8 +147,8 @@ const Patients = ({ onNavigate }) => {
       showAlertMessage(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return;
     }
-    if (selected.length === 0) {
-      showAlertMessage('Please select at least one symptom to save the record.');
+    if (selected.length === 0 && !otherSymptoms) {
+      showAlertMessage('Please select at least one symptom or enter other symptoms to save the record.');
       return;
     }
     
@@ -156,34 +158,111 @@ const Patients = ({ onNavigate }) => {
     
     try {
       // Get prediction first
-      const response = await fetch('https://apipredict-production.up.railway.app/predict', {
+      const response = await fetch('http://localhost:5000/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          symptoms: selected,
+          symptoms: [...selected, otherSymptoms].filter(s => s), // Filter out empty strings
           personal,
         }),
       });
       if (!response.ok) throw new Error('API error');
       const data = await response.json();
+      console.log('API Response:', data); // Debug log
       setResult(data);
       
       // Save personal info, symptoms, and prediction
-      setSavedRecords((prev) => [
-        ...prev,
-        {
-          personal: { ...personal },
-          symptoms: [...selected],
-          prediction: data?.predictions || [],
-          date: new Date().toLocaleString(),
-        },
-      ]);
-      setSaveMsg('Patient record added with prediction!');
-      setTimeout(() => setSaveMsg(''), 2000);
-      setPersonalError(null);
+      if (editPatientId) {
+        // Edit mode: update existing record
+        setSavedRecords((prev) => prev.map(rec =>
+          rec.id === editPatientId
+            ? {
+                ...rec,
+                personal: { ...personal },
+                symptoms: [...selected, otherSymptoms].filter(s => s), // Include otherSymptoms and filter out empty strings
+                prediction: data?.predictions?.length ? [data.predictions[0]] : [], // Only save the first disease
+                date: new Date().toLocaleString(),
+              }
+            : rec
+        ));
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Patient record updated successfully!',
+          confirmButtonColor: '#16a34a'
+        }).then(() => {
+          setShowForm(false);
+          setEditPatientId(null);
+          setPersonal({
+            idNo: '',
+            firstName: '',
+            lastName: '',
+            extension: '',
+            age: '',
+            gender: '',
+            contact: '',
+            course: '',
+            year: '',
+            section: '',
+            civilStatus: '',
+            religion: '',
+            emergencyName: '',
+            emergencyContact: '',
+            address: '',
+            bloodType: '',
+            allergy: '',
+          });
+          setSelected([]);
+          setResult(null);
+          setError(null);
+        });
+      } else {
+        // Add mode: add new record with unique id
+      const newRecord = {
+        id: uuidv4(),
+        personal: { ...personal },
+        symptoms: [...selected, otherSymptoms].filter(s => s), // Include otherSymptoms and filter out empty strings
+        prediction: data?.predictions?.length ? [data.predictions[0]] : [], // Only save the first disease
+        date: new Date().toLocaleString(),
+      };
+      console.log('Saving record:', newRecord); // Debug log
+      setSavedRecords((prev) => [...prev, newRecord]);
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Patient record added successfully!',
+          confirmButtonColor: '#16a34a'
+        }).then(() => {
+          setShowForm(false);
+          setEditPatientId(null);
+          setPersonal({
+            idNo: '',
+            firstName: '',
+            lastName: '',
+            extension: '',
+            age: '',
+            gender: '',
+            contact: '',
+            course: '',
+            year: '',
+            section: '',
+            civilStatus: '',
+            religion: '',
+            emergencyName: '',
+            emergencyContact: '',
+            address: '',
+            bloodType: '',
+            allergy: '',
+          });
+          setSelected([]);
+          setResult(null);
+          setError(null);
+        });
+      }
       
       // Reset form after successful save
       setPersonal({
+        idNo: '',
         firstName: '',
         lastName: '',
         extension: '',
@@ -202,10 +281,12 @@ const Patients = ({ onNavigate }) => {
         allergy: '',
       });
       setSelected([]);
+      setOtherSymptoms('');
       setResult(null);
       setError(null);
       
       setShowForm(false); // Hide form after successful save
+      setEditPatientId(null); // Reset edit mode
     } catch {
       setError('Failed to get prediction. Is the API running?');
     } finally {
@@ -215,23 +296,17 @@ const Patients = ({ onNavigate }) => {
 
   // Automatically predict when symptoms change
   useEffect(() => {
-    // Only trigger if at least one symptom is selected
-    if (selected.length === 0) {
-      setResult(null);
-      setError(null);
-      return;
-    }
     let ignore = false;
     const autoPredict = async () => {
       setLoading(true);
       setError(null);
       setResult(null);
       try {
-        const response = await fetch('https://apipredict-production.up.railway.app/predict', {
+        const response = await fetch('http://localhost:5000/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            symptoms: selected,
+            symptoms: [...selected, otherSymptoms].filter(s => s), // Filter out empty strings
             personal,
           }),
         });
@@ -246,7 +321,43 @@ const Patients = ({ onNavigate }) => {
     };
     autoPredict();
     return () => { ignore = true; };
-  }, [selected]);
+  }, [selected, otherSymptoms]);
+
+  // Delete patient record
+  const handleDeletePatient = (id) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will permanently delete the patient record.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setSavedRecords((prev) => prev.filter(rec => rec.id !== id));
+        setViewPatient(null);
+        Swal.fire('Deleted!', 'The patient record has been deleted.', 'success');
+      }
+    });
+  };
+
+  // Edit patient record
+  const handleEditPatient = (rec) => {
+    setPersonal({ ...rec.personal });
+    setSelected([...rec.symptoms]);
+    setOtherSymptoms(rec.symptoms.find(s => !ALL_SYMPTOMS.includes(s)) || '');
+    setResult({ predictions: rec.prediction });
+    setEditPatientId(rec.id);
+    setShowForm(true);
+    setViewPatient(null);
+  };
+
+  // Helper: check if any input is present
+  const hasAnyInput = () => {
+    if (selected.length > 0 || otherSymptoms) return true;
+    return Object.values(personal).some(val => val && val.toString().trim() !== '');
+  };
 
   return (
     <div className="bg-light min-vh-100 d-flex">
@@ -282,69 +393,42 @@ const Patients = ({ onNavigate }) => {
                     Saved Patient Records ({savedRecords.length})
                   </h5>
                 </div>
-                <div className="card-body">
-                  <div className="row g-4">
+                <div className="card-body p-0">
+                  <div className="table-responsive">
+                    <table className="table table-hover align-middle mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th scope="col">ID no.</th>
+                          <th scope="col">Full Name</th>
+                          <th scope="col">Course</th>
+                          <th scope="col">Year</th>
+                          <th scope="col">Section</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                     {savedRecords.map((rec, i) => (
-                      <div key={i} className="col-md-6 col-lg-4">
-                        <div className="card h-100 border-0 shadow-sm">
-                          <div className="card-header bg-light d-flex justify-content-between align-items-center">
-                            <div className="d-flex align-items-center">
-                              <div className="bg-success rounded-circle me-2" style={{width: '8px', height: '8px'}}></div>
-                              <small className="text-muted">{rec.date}</small>
-                            </div>
-                            <span className="badge bg-primary">#{i + 1}</span>
-                          </div>
-                          <div className="card-body">
-                            <h6 className="fw-bold mb-3">
-                              {rec.personal.firstName} {rec.personal.lastName}
-                              {rec.personal.extension && <span className="text-muted">, {rec.personal.extension}</span>}
-                            </h6>
-                            
-                            <div className="row g-2 mb-3">
-                              <div className="col-6">
-                                <small className="text-muted">Age:</small>
-                                <div>{rec.personal.age}</div>
-                              </div>
-                              <div className="col-6">
-                                <small className="text-muted">Gender:</small>
-                                <div>{rec.personal.gender}</div>
-                              </div>
-                              <div className="col-6">
-                                <small className="text-muted">Course:</small>
-                                <div>{rec.personal.course}</div>
-                              </div>
-                              <div className="col-6">
-                                <small className="text-muted">Year:</small>
-                                <div>{rec.personal.year}</div>
-                              </div>
-                            </div>
-                            
-                            <div className="mb-3">
-                              <small className="text-muted">Symptoms:</small>
-                              <div className="d-flex flex-wrap gap-1 mt-1">
-                                {rec.symptoms.map(s => (
-                                  <span key={s} className="badge bg-primary bg-opacity-75">
-                                    {symptomLabels[s]}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <small className="text-muted">Top Prediction:</small>
-                              <div className="fw-semibold text-primary">
-                                {rec.prediction[0] ? rec.prediction[0].disease.replace(/-/g, ' ').toUpperCase() : 'No prediction'}
-                              </div>
-                              {rec.prediction[0] && (
-                                <small className="text-muted">
-                                  {(rec.prediction[0].probability * 100).toFixed(1)}% confidence
-                                </small>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                          <tr key={rec.id || i}>
+                            <td>{rec.personal.idNo}</td>
+                            <td>{rec.personal.firstName} {rec.personal.lastName}{rec.personal.extension && `, ${rec.personal.extension}`}</td>
+                            <td>{rec.personal.course}</td>
+                            <td>{rec.personal.year}</td>
+                            <td>{rec.personal.section}</td>
+                            <td>
+                              <button className="btn btn-sm btn-info me-1" title="View" onClick={e => { e.stopPropagation(); setViewPatient(rec); }}>
+                                <i className="bx bx-show"></i>
+                              </button>
+                              <button className="btn btn-sm btn-warning me-1" title="Edit" onClick={e => { e.stopPropagation(); handleEditPatient(rec); }}>
+                                <i className="bx bx-edit"></i>
+                              </button>
+                              <button className="btn btn-sm btn-danger" title="Delete" onClick={e => { e.stopPropagation(); handleDeletePatient(rec.id); }}>
+                                <i className="bx bx-trash"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -366,6 +450,37 @@ const Patients = ({ onNavigate }) => {
             )}
           </div>
         </div>
+
+
+        {/* Full Screen Modal for Patient Assessment */}
+        <PatientFormModal
+          showForm={showForm}
+          setShowForm={setShowForm}
+          personal={personal}
+          handlePersonalChange={handlePersonalChange}
+          selected={selected}
+          handleSymptomChange={handleSymptomChange}
+          handleSubmit={handleSubmit}
+          handleSaveRecord={handleSaveRecord}
+          result={result}
+          loading={loading}
+          error={error}
+          editPatientId={editPatientId}
+          ALL_SYMPTOMS={ALL_SYMPTOMS}
+          symptomLabels={symptomLabels}
+          hasAnyInput={hasAnyInput}
+          otherSymptoms={otherSymptoms}
+          setOtherSymptoms={setOtherSymptoms}
+        />
+
+        {/* Full Screen Modal for Viewing Patient Info */}
+        <PatientViewModal
+          viewPatient={viewPatient}
+          setViewPatient={setViewPatient}
+          symptomLabels={symptomLabels}
+          handleEditPatient={handleEditPatient}
+          handleDeletePatient={handleDeletePatient}
+        />
 
         {/* Health Assessment Guide */}
         <div className="row mt-5">
@@ -498,715 +613,6 @@ const Patients = ({ onNavigate }) => {
             </div>
           </div>
         </div>
-
-        {/* Full Screen Modal for Patient Assessment */}
-        {showForm && (
-          <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-            <div className="modal-dialog"  style={{ marginBottom: '5%', height: '100vh', maxWidth: '90vw'}}>
-              <div className="modal-content">
-                <div className="modal-header bg-success text-white">
-                  <h5 className="modal-title">
-                    <i className="bi bi-clipboard2-pulse me-2"></i>
-                    Patient Assessment
-                  </h5>
-                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowForm(false)}></button>
-                </div>
-                <div className="modal-body p-0">
-                  <div className="row g-0 h-100">
-                    {/* Form Section */}
-                    {/* <div className="col-lg-6 p-4 overflow-auto" style={{maxHeight: '100vh'}}> */}
-                    <div className="col-lg-6 p-4 border-end border-3 border-secondary" style={{maxHeight: '100%'}}>
-
-                      <form onSubmit={handleSubmit}>
-                          {/* Personal Information */}
-                          <div className="mb-4">
-                            <h6 className="fw-semibold text-primary mb-3">
-                              <i className="bi bi-person me-2"></i>
-                              Personal Information
-                            </h6>
-                          <div className="row g-3">
-                            <div className="col-md-6">
-                              <label className="form-label">First Name *</label>
-                              <input
-                                type="text"
-                                name="firstName"
-                                value={personal.firstName}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. Juan"
-                                required
-                                maxLength="30"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Last Name *</label>
-                              <input
-                                type="text"
-                                name="lastName"
-                                value={personal.lastName}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. Dela Cruz"
-                                required
-                                maxLength="30"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Extension Name</label>
-                              <input
-                                type="text"
-                                name="extension"
-                                value={personal.extension}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. Jr., Sr., III"
-                                maxLength="10"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Age *</label>
-                              <input
-                                type="number"
-                                name="age"
-                                value={personal.age}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. 20"
-                                min="0"
-                                required
-                                maxLength="3"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Gender *</label>
-                              <select
-                                name="gender"
-                                value={personal.gender}
-                                onChange={handlePersonalChange}
-                                className="form-select"
-                                required
-                              >
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                              </select>
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Contact Number *</label>
-                              <input
-                                type="text"
-                                name="contact"
-                                value={personal.contact}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. 09123456789"
-                                required
-                                maxLength="11"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Civil Status *</label>
-                              <select
-                                name="civilStatus"
-                                value={personal.civilStatus}
-                                onChange={handlePersonalChange}
-                                className="form-select"
-                                required
-                              >
-                                <option value="">Select Status</option>
-                                <option value="Single">Single</option>
-                                <option value="Married">Married</option>
-                                <option value="Widowed">Widowed</option>
-                                <option value="Divorced">Divorced</option>
-                                <option value="Separated">Separated</option>
-                              </select>
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Religion *</label>
-                              <input
-                                type="text"
-                                name="religion"
-                                value={personal.religion}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. Catholic"
-                                required
-                                maxLength="30"
-                              />
-                            </div>
-                            <div className="col-12">
-                              <label className="form-label">Address *</label>
-                              <textarea
-                                name="address"
-                                value={personal.address}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. 123 Main Street, City, Province"
-                                required
-                                rows="3"
-                                maxLength="200"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Academic Information */}
-                        <div className="mb-4">
-                          <h6 className="fw-semibold text-primary mb-3">
-                            <i className="bi bi-mortarboard me-2"></i>
-                            Academic Information
-                          </h6>
-                          <div className="row g-3">
-                            <div className="col-md-4">
-                              <label className="form-label">Course *</label>
-                              <input
-                                type="text"
-                                name="course"
-                                value={personal.course}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. BS Computer Science"
-                                required
-                                maxLength="50"
-                              />
-                            </div>
-                            <div className="col-md-4">
-                              <label className="form-label">Year Level *</label>
-                              <select
-                                name="year"
-                                value={personal.year}
-                                onChange={handlePersonalChange}
-                                className="form-select"
-                                required
-                              >
-                                <option value="">Select Year</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
-                                <option value="3rd Year">3rd Year</option>
-                                <option value="4th Year">4th Year</option>
-                                <option value="5th Year">5th Year</option>
-                              </select>
-                            </div>
-                            <div className="col-md-4">
-                              <label className="form-label">Section *</label>
-                              <select
-                                name="section"
-                                value={personal.section}
-                                onChange={handlePersonalChange}
-                                className="form-select"
-                                required
-                              >
-                                <option value="">Select Section</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="E">E</option>
-                                <option value="F">F</option>
-                                <option value="G">G</option>
-                                <option value="H">H</option>
-                                <option value="I">I</option>
-                                <option value="J">J</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Emergency Contact */}
-                        <div className="mb-4">
-                          <h6 className="fw-semibold text-primary mb-3">
-                            <i className="bi bi-telephone me-2"></i>
-                            Emergency Contact
-                          </h6>
-                          <div className="row g-3">
-                            <div className="col-md-6">
-                              <label className="form-label">Emergency Contact Name *</label>
-                              <input
-                                type="text"
-                                name="emergencyName"
-                                value={personal.emergencyName}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. Maria Dela Cruz"
-                                required
-                                maxLength="50"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Emergency Contact Number *</label>
-                              <input
-                                type="text"
-                                name="emergencyContact"
-                                value={personal.emergencyContact}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. 09123456789"
-                                required
-                                maxLength="11"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Medical Information */}
-                        <div className="mb-4">
-                          <h6 className="fw-semibold text-primary mb-3">
-                            <i className="bi bi-heart-pulse me-2"></i>
-                            Medical Information
-                          </h6>
-                          <div className="row g-3">
-                            <div className="col-md-6">
-                              <label className="form-label">Blood Type *</label>
-                              <select
-                                name="bloodType"
-                                value={personal.bloodType}
-                                onChange={handlePersonalChange}
-                                className="form-select"
-                                required
-                              >
-                                <option value="">Select Blood Type</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                              </select>
-                            </div>
-                            <div className="col-md-6">
-                              <label className="form-label">Allergies</label>
-                              <input
-                                type="text"
-                                name="allergy"
-                                value={personal.allergy}
-                                onChange={handlePersonalChange}
-                                className="form-control"
-                                placeholder="e.g. Peanuts, Penicillin"
-                                maxLength="100"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Symptoms Selection */}
-                        <div className="mb-4">
-                          <label className="form-label fw-semibold">
-                            <i className="bi bi-list-check me-2"></i>
-                            Select Symptoms:
-                          </label>
-                          <div className="row g-2">
-                            {ALL_SYMPTOMS.map((symptom) => (
-                              <div key={symptom} className="col-6">
-                                <div className="form-check bg-light rounded p-2">
-                                  <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    id={`symptom-${symptom}`}
-                                    value={symptom}
-                                    checked={selected.includes(symptom)}
-                                    onChange={handleSymptomChange}
-                                  />
-                                  <label className="form-check-label" htmlFor={`symptom-${symptom}`}>
-                                    {symptomLabels[symptom]}
-                                  </label>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="d-grid gap-2 d-md-flex">
-                          <button
-                            type="submit"
-                            className="btn btn-primary flex-fill"
-                            disabled={loading || selected.length === 0}
-                          >
-                            {loading ? (
-                              <>
-                                <span className="spinner-border spinner-border-sm me-2"></span>
-                                Predicting...
-                              </>
-                            ) : (
-                              <>
-                                <i className="bi bi-search me-2"></i>
-                                Predict Disease
-                              </>
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleSaveRecord}
-                            className="btn btn-success flex-fill"
-                          >
-                            <i className="bi bi-plus-circle me-2"></i>
-                            Add Patient Record
-                          </button>
-                        </div>
-                      </form>
-                      
-                      {error && (
-                        <div className="alert alert-danger mt-3">
-                          <i className="bi bi-exclamation-triangle me-2"></i>
-                          {error}
-                        </div>
-                      )}
-                    </div>
-                    {/* Results Section */}
-                    <div className="col-lg-6 p-4 overflow-auto" style={{maxHeight: '100%', background: "#f8f9fa"}}>
-                      {result && (
-                        <div className="card mb-4">
-                          <div className="card-header bg-info text-white">
-                            <h6 className="card-title mb-0">
-                              <i className="bi bi-clipboard-data me-2"></i>
-                              Assessment Results
-                            </h6>
-                          </div>
-                          <div className="card-body">
-                            {/* Comprehensive Student Information Display */}
-                            <div className="mb-4">
-                              <h6 className="fw-semibold text-primary mb-3">
-                                <i className="bi bi-person-badge me-2"></i>
-                                Complete Student Information
-                              </h6>
-                              
-                              {/* Personal Information */}
-                              <div className="card mb-3 border-0 shadow-sm">
-                                <div className="card-header bg-primary bg-opacity-10">
-                                  <h6 className="fw-semibold text-primary mb-0">
-                                    <i className="bi bi-person me-2"></i>
-                                    Personal Information
-                                  </h6>
-                                </div>
-                                <div className="card-body">
-                                  <div className="row g-3">
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Full Name:</span>
-                                        <span className="fw-medium">
-                                          {personal.firstName} {personal.lastName}
-                                          {personal.extension && <span className="text-muted">, {personal.extension}</span>}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Age:</span>
-                                        <span className="fw-medium">{personal.age} years</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Gender:</span>
-                                        <span className="fw-medium">{personal.gender}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Contact Number:</span>
-                                        <span className="fw-medium">{personal.contact}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Civil Status:</span>
-                                        <span className="fw-medium">{personal.civilStatus}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Religion:</span>
-                                        <span className="fw-medium">{personal.religion}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-12">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Address:</span>
-                                        <span className="fw-medium text-end">{personal.address}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Academic Information */}
-                              <div className="card mb-3 border-0 shadow-sm">
-                                <div className="card-header bg-success bg-opacity-10">
-                                  <h6 className="fw-semibold text-success mb-0">
-                                    <i className="bi bi-mortarboard me-2"></i>
-                                    Academic Information
-                                  </h6>
-                                </div>
-                                <div className="card-body">
-                                  <div className="row g-3">
-                                    <div className="col-md-4">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Course:</span>
-                                        <span className="fw-medium">{personal.course}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-4">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Year Level:</span>
-                                        <span className="fw-medium">{personal.year}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-4">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Section:</span>
-                                        <span className="fw-medium">{personal.section}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Emergency Contact */}
-                              <div className="card mb-3 border-0 shadow-sm">
-                                <div className="card-header bg-warning bg-opacity-10">
-                                  <h6 className="fw-semibold text-warning mb-0">
-                                    <i className="bi bi-telephone me-2"></i>
-                                    Emergency Contact
-                                  </h6>
-                                </div>
-                                <div className="card-body">
-                                  <div className="row g-3">
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Contact Name:</span>
-                                        <span className="fw-medium">{personal.emergencyName}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Contact Number:</span>
-                                        <span className="fw-medium">{personal.emergencyContact}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Medical Information */}
-                              <div className="card mb-3 border-0 shadow-sm">
-                                <div className="card-header bg-danger bg-opacity-10">
-                                  <h6 className="fw-semibold text-danger mb-0">
-                                    <i className="bi bi-heart-pulse me-2"></i>
-                                    Medical Information
-                                  </h6>
-                                </div>
-                                <div className="card-body">
-                                  <div className="row g-3">
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Blood Type:</span>
-                                        <span className="fw-medium">{personal.bloodType}</span>
-                                      </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                      <div className="d-flex justify-content-between">
-                                        <span className="text-muted">Allergies:</span>
-                                        <span className="fw-medium">
-                                          {personal.allergy ? personal.allergy : 'None reported'}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {/* Selected Symptoms */}
-                              <div className="card border-0 shadow-sm">
-                                <div className="card-header bg-info bg-opacity-10">
-                                  <h6 className="fw-semibold text-info mb-0">
-                                    <i className="bi bi-list-check me-2"></i>
-                                    Current Symptoms
-                                  </h6>
-                                </div>
-                                <div className="card-body">
-                                  <div className="d-flex flex-wrap gap-1">
-                                    {selected.length > 0 ? (
-                                      selected.map(symptom => (
-                                        <span key={symptom} className="badge bg-info">
-                                          {symptomLabels[symptom]}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-muted fst-italic">No symptoms selected</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Assessment Results */}
-                            {result.predictions && result.predictions.length > 0 && (
-                              <div>
-                                <h6 className="fw-semibold text-primary mb-3">
-                                  <i className="bi bi-clipboard2-check me-2"></i>
-                                  Medical Assessment
-                                </h6>
-                                
-                                {result.predictions.map((pred, idx) => (
-                                  <div key={pred.disease} className="card mb-3 border-0 shadow-sm">
-                                    <div className="card-header bg-light">
-                                      <div className="d-flex justify-content-between align-items-center">
-                                        <div className="d-flex align-items-center">
-                                          <span className="badge bg-primary rounded-circle me-3" style={{width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                                            {idx + 1}
-                                          </span>
-                                          <div>
-                                            <h6 className="fw-bold mb-0">
-                                              {pred.disease.replace(/-/g, ' ').toUpperCase()}
-                                            </h6>
-                                            <small className="text-muted">Primary Diagnosis</small>
-                                          </div>
-                                        </div>
-                                        <div className="text-end">
-                                          <div className="fw-bold text-primary">
-                                            {(pred.probability * 100).toFixed(1)}%
-                                          </div>
-                                          <small className="text-muted">Confidence</small>
-                                        </div>
-                                      </div>
-                                      
-                                      {/* Confidence Bar */}
-                                      <div className="mt-2">
-                                        <div className="progress" style={{height: '8px'}}>
-                                          <div 
-                                            className="progress-bar bg-primary"
-                                            style={{ width: `${(pred.probability * 100)}%` }}
-                                          ></div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    
-                                    {/* Risk & Severity */}
-                                    <div className="card-body bg-light">
-                                      <div className="row g-2">
-                                        <div className="col-md-6">
-                                          <div className="d-flex align-items-center">
-                                            <div className={`rounded-circle me-2 ${
-                                              pred.info.risk === 'High' ? 'bg-danger' :
-                                              pred.info.risk === 'Moderate' ? 'bg-warning' :
-                                              'bg-success'
-                                            }`} style={{width: '12px', height: '12px'}}></div>
-                                            <span className={`badge ${
-                                              pred.info.risk === 'High' ? 'bg-danger bg-opacity-10 text-danger' :
-                                              pred.info.risk === 'Moderate' ? 'bg-warning bg-opacity-10 text-warning' :
-                                              'bg-success bg-opacity-10 text-success'
-                                            }`}>
-                                              {pred.info.risk} Risk
-                                            </span>
-                                          </div>
-                                        </div>
-                                        <div className="col-md-6">
-                                          <div className="d-flex align-items-center">
-                                            <div className={`rounded-circle me-2 ${
-                                              pred.info.severity === 'Severe' ? 'bg-danger' :
-                                              pred.info.severity === 'Moderate-Severe' || pred.info.severity === 'Moderate' ? 'bg-warning' :
-                                              'bg-success'
-                                            }`} style={{width: '12px', height: '12px'}}></div>
-                                            <span className={`badge ${
-                                              pred.info.severity === 'Severe' ? 'bg-danger bg-opacity-10 text-danger' :
-                                              pred.info.severity === 'Moderate-Severe' || pred.info.severity === 'Moderate' ? 'bg-warning bg-opacity-10 text-warning' :
-                                              'bg-success bg-opacity-10 text-success'
-                                            }`}>
-                                              {pred.info.severity}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    
-                                    {/* Recommendations & Medications */}
-                                    <div className="card-body">
-                                      <div className="row g-3">
-                                        <div className="col-md-6">
-                                          <h6 className="fw-semibold text-primary mb-2">
-                                            <i className="bi bi-lightbulb me-2"></i>
-                                            Recommendations
-                                          </h6>
-                                          <div className="bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded p-3">
-                                            <p className="small mb-0">
-                                              {pred.info.advice}
-                                            </p>
-                                          </div>
-                                        </div>
-                                        
-                                        <div className="col-md-6">
-                                          <h6 className="fw-semibold text-success mb-2">
-                                            <i className="bi bi-capsule me-2"></i>
-                                            Medications
-                                          </h6>
-                                          <div className="bg-success bg-opacity-10 border border-success border-opacity-25 rounded p-3">
-                                            {pred.info.medications && pred.info.medications.length > 0 ? (
-                                              <ul className="list-unstyled mb-0 small">
-                                                {pred.info.medications.map((med, medIdx) => (
-                                                  <li key={medIdx} className="d-flex align-items-center mb-1">
-                                                    <span className="bg-success rounded-circle me-2" style={{width: '4px', height: '4px'}}></span>
-                                                    {med}
-                                                  </li>
-                                                ))}
-                                              </ul>
-                                            ) : (
-                                              <p className="text-muted fst-italic mb-0 small">No specific medications recommended</p>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                                
-                                {saveMsg && (
-                                  <div className="alert alert-success">
-                                    <i className="bi bi-check-circle me-2"></i>
-                                    {saveMsg}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Empty States */}
-                            {result.predictions && result.predictions.length === 0 && (
-                              <div className="text-center py-4">
-                                <i className="bi bi-question-circle text-muted" style={{fontSize: '3rem'}}></i>
-                                <h6 className="mt-3">No Specific Diagnosis</h6>
-                                <p className="text-muted">No likely disease found for the selected symptoms.</p>
-                              </div>
-                            )}
-                            
-                            {!result.predictions && !loading && (
-                              <div className="text-center py-4">
-                                <i className="bi bi-clipboard-check text-primary" style={{fontSize: '3rem'}}></i>
-                                <h6 className="mt-3">Ready for Assessment</h6>
-                                <p className="text-muted">Select symptoms to begin the health assessment</p>
-                              </div>
-                            )}
-                            
-                            {loading && (
-                              <div className="text-center py-4">
-                                <div className="spinner-border text-primary" role="status">
-                                  <span className="visually-hidden">Loading...</span>
-                                </div>
-                                <h6 className="mt-3">Analyzing Symptoms</h6>
-                                <p className="text-muted">Please wait while we process the assessment...</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
