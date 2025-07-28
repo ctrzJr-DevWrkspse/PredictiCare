@@ -59,7 +59,7 @@ const PatientFormModal = ({
                     <div className="row g-3">
                       <div className="col-md-6">
                         <label className="form-label"><strong>ID no. <span style= {{color: 'red'}}> *</span> </strong></label>
-                        
+
                         <input
                           type="text"
                           name="idNo"
@@ -72,7 +72,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">First Name *</label>
+                        <label className="form-label"><strong>First Name </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="firstName"
@@ -85,7 +85,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Last Name *</label>
+                        <label className="form-label"><strong>Last Name </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="lastName"
@@ -98,7 +98,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Extension Name</label>
+                        <label className="form-label"><strong>Extension Name </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="extension"
@@ -110,7 +110,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Age *</label>
+                        <label className="form-label"><strong>Age </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="number"
                           name="age"
@@ -124,7 +124,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Gender *</label>
+                        <label className="form-label"><strong>Gender </strong><span style= {{color: 'red'}} >*</span></label>
                         <select
                           name="gender"
                           value={personal.gender}
@@ -138,7 +138,7 @@ const PatientFormModal = ({
                         </select>
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Contact Number *</label>
+                        <label className="form-label"><strong>Contact Number </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="contact"
@@ -151,7 +151,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Civil Status *</label>
+                        <label className="form-label"><strong>Civil Status </strong><span style= {{color: 'red'}} >*</span></label>
                         <select
                           name="civilStatus"
                           value={personal.civilStatus}
@@ -168,7 +168,7 @@ const PatientFormModal = ({
                         </select>
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Religion *</label>
+                        <label className="form-label"><strong>Religion </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="religion"
@@ -181,7 +181,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-12">
-                        <label className="form-label">Address *</label>
+                        <label className="form-label"><strong>Address </strong><span style= {{color: 'red'}} >*</span></label>
                         <textarea
                           name="address"
                           value={personal.address}
@@ -203,20 +203,24 @@ const PatientFormModal = ({
                     </h6>
                     <div className="row g-3">
                       <div className="col-md-4">
-                        <label className="form-label">Course *</label>
-                        <input
-                          type="text"
+                        <label className="form-label"><strong>Course </strong><span style= {{color: 'red'}} >*</span></label>
+                        <select
                           name="course"
                           value={personal.course}
                           onChange={handlePersonalChange}
-                          className="form-control"
-                          placeholder="e.g. BS Computer Science"
+                          className="form-select"
                           required
-                          maxLength="50"
-                        />
+                        >
+                          <option value="">Select Course</option>
+                          <option value="BSIT">BSIT</option>
+                          <option value="BAP">BAP</option>
+                          <option value="?">?</option>
+                          <option value="?">?</option>
+                          <option value="?">?</option>
+                        </select>
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">Year Level *</label>
+                        <label className="form-label"><strong>Year Level </strong><span style= {{color: 'red'}} >*</span></label>
                         <select
                           name="year"
                           value={personal.year}
@@ -233,7 +237,7 @@ const PatientFormModal = ({
                         </select>
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">Section *</label>
+                        <label className="form-label"><strong>Section </strong><span style= {{color: 'red'}} >*</span></label>
                         <select
                           name="section"
                           value={personal.section}
@@ -248,10 +252,6 @@ const PatientFormModal = ({
                           <option value="D">D</option>
                           <option value="E">E</option>
                           <option value="F">F</option>
-                          <option value="G">G</option>
-                          <option value="H">H</option>
-                          <option value="I">I</option>
-                          <option value="J">J</option>
                         </select>
                       </div>
                     </div>
@@ -264,7 +264,7 @@ const PatientFormModal = ({
                     </h6>
                     <div className="row g-3">
                       <div className="col-md-6">
-                        <label className="form-label">Emergency Contact Name *</label>
+                        <label className="form-label"><strong>Emergency Contact Name </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="emergencyName"
@@ -277,7 +277,7 @@ const PatientFormModal = ({
                         />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Emergency Contact Number *</label>
+                        <label className="form-label"> <strong>Emergency Contact Number </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="emergencyContact"
@@ -299,7 +299,7 @@ const PatientFormModal = ({
                     </h6>
                     <div className="row g-3">
                       <div className="col-md-6">
-                        <label className="form-label">Blood Type *</label>
+                        <label className="form-label"><strong>Blood Type </strong><span style= {{color: 'red'}} >*</span></label>
                         <select
                           name="bloodType"
                           value={personal.bloodType}
@@ -319,7 +319,7 @@ const PatientFormModal = ({
                         </select>
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Allergies</label>
+                        <label className="form-label"><strong>Allergies </strong><span style= {{color: 'red'}} >*</span></label>
                         <input
                           type="text"
                           name="allergy"
@@ -417,6 +417,12 @@ const PatientFormModal = ({
                   </div>
                 )}
               </div>
+
+
+
+
+
+
               {/* Results Section */}
               <div className="col-lg-6 p-4" style={{background: "#f8f9fa"}}>
                 {hasAnyInput() && result && (
@@ -443,15 +449,15 @@ const PatientFormModal = ({
                             <div className="row g-3">
                               {personal.idNo && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
-                                    <span className="text-muted">ID no.:</span>
+                                  <div className="d-flex">
+                                    <span className="text-muted">ID no.: </span>
                                     <span className="fw-medium">{personal.idNo}</span>
                                   </div>
                                 </div>
                               )}
                               {personal.firstName && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex">
                                     <span className="text-muted">Full Name:</span>
                                     <span className="fw-medium">
                                       {personal.firstName} {personal.lastName}
@@ -462,7 +468,7 @@ const PatientFormModal = ({
                               )}
                               {personal.age && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Age:</span>
                                     <span className="fw-medium">{personal.age} years</span>
                                   </div>
@@ -470,7 +476,7 @@ const PatientFormModal = ({
                               )}
                               {personal.gender && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Gender:</span>
                                     <span className="fw-medium">{personal.gender}</span>
                                   </div>
@@ -478,15 +484,15 @@ const PatientFormModal = ({
                               )}
                               {personal.contact && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
-                                    <span className="text-muted">Contact Number:</span>
+                                  <div className="d-flex ">
+                                    <span className="text-muted">Contact Number: </span>
                                     <span className="fw-medium">{personal.contact}</span>
                                   </div>
                                 </div>
                               )}
                               {personal.civilStatus && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Civil Status:</span>
                                     <span className="fw-medium">{personal.civilStatus}</span>
                                   </div>
@@ -494,7 +500,7 @@ const PatientFormModal = ({
                               )}
                               {personal.religion && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Religion:</span>
                                     <span className="fw-medium">{personal.religion}</span>
                                   </div>
@@ -502,7 +508,7 @@ const PatientFormModal = ({
                               )}
                               {personal.address && (
                                 <div className="col-12">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex">
                                     <span className="text-muted">Address:</span>
                                     <span className="fw-medium text-end">{personal.address}</span>
                                   </div>
@@ -522,7 +528,7 @@ const PatientFormModal = ({
                             <div className="row g-3">
                               {personal.course && (
                                 <div className="col-md-4">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex">
                                     <span className="text-muted">Course:</span>
                                     <span className="fw-medium">{personal.course}</span>
                                   </div>
@@ -530,7 +536,7 @@ const PatientFormModal = ({
                               )}
                               {personal.year && (
                                 <div className="col-md-4">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex">
                                     <span className="text-muted">Year Level:</span>
                                     <span className="fw-medium">{personal.year}</span>
                                   </div>
@@ -538,7 +544,7 @@ const PatientFormModal = ({
                               )}
                               {personal.section && (
                                 <div className="col-md-4">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex">
                                     <span className="text-muted">Section:</span>
                                     <span className="fw-medium">{personal.section}</span>
                                   </div>
@@ -558,7 +564,7 @@ const PatientFormModal = ({
                             <div className="row g-3">
                               {personal.emergencyName && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex">
                                     <span className="text-muted">Contact Name:</span>
                                     <span className="fw-medium">{personal.emergencyName}</span>
                                   </div>
@@ -566,7 +572,7 @@ const PatientFormModal = ({
                               )}
                               {personal.emergencyContact && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Contact Number:</span>
                                     <span className="fw-medium">{personal.emergencyContact}</span>
                                   </div>
@@ -586,7 +592,7 @@ const PatientFormModal = ({
                             <div className="row g-3">
                               {personal.bloodType && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Blood Type:</span>
                                     <span className="fw-medium">{personal.bloodType}</span>
                                   </div>
@@ -594,7 +600,7 @@ const PatientFormModal = ({
                               )}
                               {personal.allergy && (
                                 <div className="col-md-6">
-                                  <div className="d-flex justify-content-between">
+                                  <div className="d-flex ">
                                     <span className="text-muted">Allergies:</span>
                                     <span className="fw-medium">
                                       {personal.allergy ? personal.allergy : 'None reported'}

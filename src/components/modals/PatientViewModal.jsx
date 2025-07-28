@@ -41,34 +41,34 @@ const PatientViewModal = ({ viewPatient, setViewPatient, symptomLabels }) => {
                   </h6>
                   <div className="row g-3">
                     {viewPatient.personal.idNo && (
-                      <div className="col-md-6"><strong>ID no.:</strong> {viewPatient.personal.idNo}</div>
+                      <div className="col-md-6">ID no.: <strong>{viewPatient.personal.idNo}</strong> </div>
                     )}
                     {viewPatient.personal.firstName && (
-                      <div className="col-md-6"><strong>First Name:</strong> {viewPatient.personal.firstName}</div>
+                      <div className="col-md-6">First Name: <strong>{viewPatient.personal.firstName}</strong> </div>
                     )}
                     {viewPatient.personal.lastName && (
-                      <div className="col-md-6"><strong>Last Name:</strong> {viewPatient.personal.lastName}</div>
+                      <div className="col-md-6">Last Name: <strong>{viewPatient.personal.lastName}</strong></div>
                     )}
                     {viewPatient.personal.extension && (
-                      <div className="col-md-6"><strong>Extension:</strong> {viewPatient.personal.extension}</div>
+                      <div className="col-md-6">Extension: <strong>{viewPatient.personal.extension}</strong></div>
                     )}
                     {viewPatient.personal.age && (
-                      <div className="col-md-6"><strong>Age:</strong> {viewPatient.personal.age}</div>
+                      <div className="col-md-6">Age: <strong>{viewPatient.personal.age}</strong></div>
                     )}
                     {viewPatient.personal.gender && (
-                      <div className="col-md-6"><strong>Gender:</strong> {viewPatient.personal.gender}</div>
+                      <div className="col-md-6">Gender: <strong>{viewPatient.personal.gender}</strong></div>
                     )}
                     {viewPatient.personal.contact && (
-                      <div className="col-md-6"><strong>Contact:</strong> {viewPatient.personal.contact}</div>
+                      <div className="col-md-6">Contact: <strong>{viewPatient.personal.contact}</strong></div>
                     )}
                     {viewPatient.personal.civilStatus && (
-                      <div className="col-md-6"><strong>Civil Status:</strong> {viewPatient.personal.civilStatus}</div>
+                      <div className="col-md-6">Civil Status: <strong>{viewPatient.personal.civilStatus}</strong></div>
                     )}
                     {viewPatient.personal.religion && (
-                      <div className="col-md-6"><strong>Religion:</strong> {viewPatient.personal.religion}</div>
+                      <div className="col-md-6">Religion: <strong>{viewPatient.personal.religion}</strong></div>
                     )}
                     {viewPatient.personal.address && (
-                      <div className="col-12"><strong>Address:</strong> {viewPatient.personal.address}</div>
+                      <div className="col-12">Address: <strong>{viewPatient.personal.address}</strong></div>
                     )}
                   </div>
                 </div>
@@ -79,13 +79,13 @@ const PatientViewModal = ({ viewPatient, setViewPatient, symptomLabels }) => {
                   </h6>
                   <div className="row g-3">
                     {viewPatient.personal.course && (
-                      <div className="col-md-4"><strong>Course:</strong> {viewPatient.personal.course}</div>
+                      <div className="col-md-4">Course: <strong>{viewPatient.personal.course}</strong></div>
                     )}
                     {viewPatient.personal.year && (
-                      <div className="col-md-4"><strong>Year Level:</strong> {viewPatient.personal.year}</div>
+                      <div className="col-md-4">Year Level: <strong>{viewPatient.personal.year}</strong></div>
                     )}
                     {viewPatient.personal.section && (
-                      <div className="col-md-4"><strong>Section:</strong> {viewPatient.personal.section}</div>
+                      <div className="col-md-4">Section: <strong>{viewPatient.personal.section}</strong></div>
                     )}
                   </div>
                 </div>
@@ -96,10 +96,10 @@ const PatientViewModal = ({ viewPatient, setViewPatient, symptomLabels }) => {
                   </h6>
                   <div className="row g-3">
                     {viewPatient.personal.emergencyName && (
-                      <div className="col-md-6"><strong>Name:</strong> {viewPatient.personal.emergencyName}</div>
+                      <div className="col-md-6">Name: <strong>{viewPatient.personal.emergencyName}</strong></div>
                     )}
                     {viewPatient.personal.emergencyContact && (
-                      <div className="col-md-6"><strong>Contact Number:</strong> {viewPatient.personal.emergencyContact}</div>
+                      <div className="col-md-6">Contact Number: <strong>{viewPatient.personal.emergencyContact}</strong></div>
                     )}
                   </div>
                 </div>
@@ -110,10 +110,10 @@ const PatientViewModal = ({ viewPatient, setViewPatient, symptomLabels }) => {
                   </h6>
                   <div className="row g-3">
                     {viewPatient.personal.bloodType && (
-                      <div className="col-md-6"><strong>Blood Type:</strong> {viewPatient.personal.bloodType}</div>
+                      <div className="col-md-6">Blood Type: <strong>{viewPatient.personal.bloodType}</strong></div>
                     )}
                     {viewPatient.personal.allergy && (
-                      <div className="col-md-6"><strong>Allergies:</strong> {viewPatient.personal.allergy ? viewPatient.personal.allergy : 'None reported'}</div>
+                      <div className="col-md-6">Allergies: <strong>{viewPatient.personal.allergy ? viewPatient.personal.allergy : 'None reported'}</strong></div>
                     )}
                   </div>
                 </div>

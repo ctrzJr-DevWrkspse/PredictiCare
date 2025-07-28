@@ -1,10 +1,11 @@
+import 'sweetalert2/dist/sweetalert2.min.css';
 
-import React, { useState, useEffect } from 'react';
+import { PatientFormModal, PatientViewModal } from './modals';
+import React, { useEffect, useState } from 'react';
+
 import Sidebar from './Sidebar';
 import Swal from 'sweetalert2';
-import 'sweetalert2/dist/sweetalert2.min.css';
 import { v4 as uuidv4 } from 'uuid';
-import { PatientViewModal, PatientFormModal } from './modals';
 
 // List of all possible symptoms (from the API's MEDICAL_DB)
 const ALL_SYMPTOMS = [
@@ -106,7 +107,7 @@ const Patients = ({ onNavigate }) => {
     setError(null);
     setResult(null);
     try {
-      const response = await fetch('http://localhost:5000/predict', {
+      const response = await fetch('https://apipredict-production.up.railway.app/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -158,7 +159,7 @@ const Patients = ({ onNavigate }) => {
     
     try {
       // Get prediction first
-      const response = await fetch('http://localhost:5000/predict', {
+      const response = await fetch('https://apipredict-production.up.railway.app/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -302,7 +303,7 @@ const Patients = ({ onNavigate }) => {
       setError(null);
       setResult(null);
       try {
-        const response = await fetch('http://localhost:5000/predict', {
+        const response = await fetch('https://apipredict-production.up.railway.app/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
