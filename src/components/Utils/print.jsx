@@ -1,15 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-const Print = ({ reportData }) => {
-  // Auto-print when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      window.print();
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
+const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
   // Default data if no reportData is provided
   const consultationData = reportData?.consultationData || [
     { code: 'A', complaint: 'Fever', personnel: 1, total: 1 },
@@ -81,24 +72,79 @@ const Print = ({ reportData }) => {
     total: 748
   };
 
+  const handlePrint = () => {
+    if (onPrint) {
+      onPrint();
+    } else {
+      window.print();
+    }
+  };
+
   return (
     <div className="bg-white font-sans">
+      {/* Preview Controls - Only show in preview mode */}
+      {isPreview && (
+        <div className="no-print bg-light p-3 mb-4 rounded border">
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">Report Preview</h5>
+            <div>
+              <button 
+                className="btn btn-primary me-2"
+                onClick={handlePrint}
+              >
+                <i className="fas fa-print me-1"></i>
+                Print Report
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={onClose}
+              >
+                <i className="fas fa-times me-1"></i>
+                Close Preview
+              </button>
+            </div>
+          </div>
+          <small className="text-muted">
+            Review the report below and click "Print Report" when ready.
+          </small>
+        </div>
+      )}
+
       {/* Header - More Compact */}
       <div className="text-center mb-1">
-        <div className="flex items-center justify-center mb-1">
-          <div className="w-4 h-4 border border-gray-400 rounded-full flex items-center justify-center mr-1 text-[4px] font-bold">
+        <div className="d-flex justify-content-center align-items-center mb-1">
+          <div className="me-2" style={{
+            width: '16px', 
+            height: '16px', 
+            border: '1px solid #666', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            fontSize: '6px',
+            fontWeight: 'bold'
+          }}>
             ISPSC
           </div>
           <div>
-            <div className="text-[6px] font-bold">ILOCOS SUR POLYTECHNIC STATE COLLEGE</div>
-            <div className="text-[5px]">Tagudin Campus - Health Services Consultation Report</div>
+            <div style={{fontSize: '8px', fontWeight: 'bold'}}>
+              ILOCOS SUR POLYTECHNIC STATE COLLEGE
+            </div>
+            <div style={{fontSize: '7px'}}>
+              Tagudin Campus - Health Services Consultation Report
+            </div>
           </div>
         </div>
       </div>
 
       {/* Table with Maximum Compactness */}
-      <div className="w-full overflow-hidden">
-        <table className="w-full border-collapse text-[4px]" style={{tableLayout: 'fixed'}}>
+      <div className="w-100 overflow-hidden">
+        <table className="table table-bordered table-sm" style={{
+          fontSize: '6px',
+          lineHeight: '1',
+          tableLayout: 'fixed',
+          width: '100%'
+        }}>
           <colgroup>
             <col style={{width: '25%'}} />
             <col style={{width: '4.2%'}} />
@@ -120,133 +166,140 @@ const Print = ({ reportData }) => {
             <col style={{width: '4.5%'}} />
           </colgroup>
           <thead>
-            <tr className="bg-gray-100">
-              <th className="border border-black text-center font-bold text-[4px]" style={{padding: '0.5px', lineHeight: '1'}}>COMPLAINTS</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>GR</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>EM</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>ED</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>BS</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>BL</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>BD</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>BP</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>BA</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>EN</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>BE</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>SE</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>PE</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>SH</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>JH</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>ST</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>OT</th>
-              <th className="border border-black text-center font-bold bg-red-100 text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>TOT</th>
+            <tr className="table-light">
+              <th className="text-center fw-bold p-1" style={{fontSize: '6px'}}>COMPLAINTS</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>GR</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>EM</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>ED</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BS</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BL</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BD</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BP</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BA</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>EN</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BE</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>SE</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>PE</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>SH</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>JH</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>ST</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>OT</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>TOT</th>
             </tr>
-            <tr className="bg-yellow-100">
-              <td className="border border-black text-center font-bold text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>REASON FOR CONSULT</td>
+            <tr className="table-warning">
+              <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>REASON FOR CONSULT</td>
               {Array(17).fill(null).map((_, i) => (
-                <td key={i} className="border border-black" style={{padding: '0.5px'}}></td>
+                <td key={i} className="p-1"></td>
               ))}
             </tr>
           </thead>
           <tbody>
             {consultationData.map((row, index) => (
               <tr key={index}>
-                <td className="border border-black text-left text-[3px]" style={{padding: '0.5px', lineHeight: '1.1', wordBreak: 'break-word'}}>
-                  <span className="font-bold">{row.code}.</span> {row.complaint}
+                <td className="text-start p-1" style={{
+                  fontSize: '5px', 
+                  lineHeight: '1.1', 
+                  wordBreak: 'break-word'
+                }}>
+                  <span className="fw-bold">{row.code}.</span> {row.complaint}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '6' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '116' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '161' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '21' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '53' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '38' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '159' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '36' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '21' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '76' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.code === 'QQ' ? '30' : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}></td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}></td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}></td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
                   {row.personnel > 0 ? row.personnel : ''}
                 </td>
-                <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}></td>
-                <td className="border border-black text-center text-[3px] font-bold" style={{padding: '0.5px', lineHeight: '1'}}>
+                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
+                <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>
                   {row.total > 0 ? row.total : ''}
                 </td>
               </tr>
             ))}
             {/* Total Row */}
-            <tr className="bg-red-100 font-bold">
-              <td className="border border-black text-center text-[3px] font-bold" style={{padding: '0.5px', lineHeight: '1'}}>TOTAL</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.gradSchool}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.edMath}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.edip}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.base}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.bael}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.bad}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.bpa}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.bsba}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.beEntep}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.beed}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.bsed}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.bped}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.shs}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.jhs}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.personnel}</td>
-              <td className="border border-black text-center text-[3px]" style={{padding: '0.5px', lineHeight: '1'}}>{totals.others}</td>
-              <td className="border border-black text-center text-[3px] font-bold" style={{padding: '0.5px', lineHeight: '1'}}>{totals.total}</td>
+            <tr className="table-danger fw-bold">
+              <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>TOTAL</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.gradSchool}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.edMath}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.edip}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.base}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bael}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bad}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bpa}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsba}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.beEntep}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.beed}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsed}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bped}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.shs}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.jhs}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.personnel}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.others}</td>
+              <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>{totals.total}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       {/* Footer - Compact */}
-      <div className="mt-1 text-[4px] flex justify-between">
+      <div className="mt-2 d-flex justify-content-between" style={{fontSize: '6px'}}>
         <div style={{width: '60%'}}>
-          <div className="font-bold">II. PHOTO DOCUMENTATION and other SUPPORTING DOCUMENTS</div>
+          <div className="fw-bold">II. PHOTO DOCUMENTATION and other SUPPORTING DOCUMENTS</div>
           <div>NOTE: Photo documentation attach shall be given caption</div>
         </div>
-        <div className="text-right" style={{width: '35%'}}>
+        <div className="text-end" style={{width: '35%'}}>
           <div>Report Date: {new Date().toLocaleDateString()}</div>
           <div className="mt-1">
             <div>Prepared by: _______________</div>
-            <div className="text-[3px]">Health Services Officer</div>
+            <div style={{fontSize: '5px'}}>Health Services Officer</div>
           </div>
         </div>
       </div>
 
-      {/* Print Button - Hidden on Print */}
-      <div className="mt-2 text-center print:hidden">
-        <button 
-          onClick={() => window.print()}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Print Document
-        </button>
-      </div>
+      {/* Print Button - Hidden on Print and in Preview Mode */}
+      {!isPreview && (
+        <div className="mt-3 text-center no-print">
+          <button 
+            onClick={handlePrint}
+            className="btn btn-primary"
+          >
+            <i className="fas fa-print me-1"></i>
+            Print Document
+          </button>
+        </div>
+      )}
 
       {/* Print Styles */}
       <style jsx>{`
@@ -256,6 +309,10 @@ const Print = ({ reportData }) => {
             margin: 0.4in 0.3in;
           }
           
+          .no-print {
+            display: none !important;
+          }
+          
           * {
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
@@ -263,28 +320,24 @@ const Print = ({ reportData }) => {
           
           body {
             font-family: Arial, sans-serif !important;
-            font-size: 3px !important;
+            font-size: 4px !important;
             line-height: 1 !important;
             margin: 0 !important;
             padding: 0 !important;
-          }
-          
-          .print\\:hidden {
-            display: none !important;
           }
           
           table {
             width: 100% !important;
             table-layout: fixed !important;
             border-collapse: collapse !important;
-            font-size: 3px !important;
+            font-size: 4px !important;
             page-break-inside: avoid;
           }
           
           th, td {
-            border: 0.5px solid black !important;
-            padding: 0.5px !important;
-            font-size: 3px !important;
+            border: 1px solid black !important;
+            padding: 1px !important;
+            font-size: 4px !important;
             line-height: 1 !important;
             overflow: hidden !important;
             word-wrap: break-word !important;
@@ -293,28 +346,10 @@ const Print = ({ reportData }) => {
           tr {
             page-break-inside: avoid !important;
           }
-          
-          .text-\\[6px\\] {
-            font-size: 5px !important;
-          }
-          
-          .text-\\[5px\\] {
-            font-size: 4px !important;
-          }
-          
-          .text-\\[4px\\] {
-            font-size: 3px !important;
-          }
-          
-          .text-\\[3px\\] {
-            font-size: 3px !important;
-          }
-          
-          .w-4 {
-            width: 12px !important;
-            height: 12px !important;
-            font-size: 3px !important;
-          }
+        }
+        
+        .no-print {
+          display: block;
         }
       `}</style>
     </div>
