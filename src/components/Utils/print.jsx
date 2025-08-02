@@ -126,13 +126,29 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
       'practicum': 'TT'
     };
 
-    // Initialize counts for each category
+    // Initialize counts for each category with course breakdown
     const consultationCounts = {};
     consultationCategories.forEach(cat => {
       consultationCounts[cat.code] = { 
         ...cat, 
-        personnel: 0, 
-        students: 0, 
+        courses: {
+          'BSIT': 0,      // GR (Graduate School - using BSIT as placeholder)
+          'BS MATH': 0,   // EM (Education Math)
+          'BASS': 0,      // ED (Education - using BASS as placeholder)
+          'BSIT': 0,      // BS (using BSIT)
+          'BAEL': 0,      // BL
+          'BAP': 0,       // BD (using BAP as placeholder)
+          'BPA': 0,       // BP
+          'BSBA': 0,      // BA
+          'BS ENTREP': 0, // EN
+          'BEED': 0,      // BE
+          'BSED': 0,      // SE
+          'BPED': 0,      // PE
+          'SHS': 0,       // SH
+          'JHS': 0,       // JH
+          'PERSONNEL': 0  // ST (Staff/Personnel)
+        },
+        others: 0,
         total: 0 
       };
     });
@@ -146,8 +162,15 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
             const normalizedSymptom = symptom.toLowerCase().trim();
             const code = diseaseToCodeMap[normalizedSymptom];
             if (code && consultationCounts[code]) {
-              consultationCounts[code].total += record.count || 1;
-              consultationCounts[code].personnel += record.count || 1;
+              const count = record.count || 1;
+              const course = record.course || 'others';
+              
+              if (consultationCounts[code].courses[course] !== undefined) {
+                consultationCounts[code].courses[course] += count;
+              } else {
+                consultationCounts[code].others += count;
+              }
+              consultationCounts[code].total += count;
             }
           });
         }
@@ -159,8 +182,15 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
               const normalizedDisease = pred.disease.toLowerCase().trim();
               const code = diseaseToCodeMap[normalizedDisease];
               if (code && consultationCounts[code]) {
-                consultationCounts[code].total += record.count || 1;
-                consultationCounts[code].personnel += record.count || 1;
+                const count = record.count || 1;
+                const course = record.course || 'others';
+                
+                if (consultationCounts[code].courses[course] !== undefined) {
+                  consultationCounts[code].courses[course] += count;
+                } else {
+                  consultationCounts[code].others += count;
+                }
+                consultationCounts[code].total += count;
               }
             }
           });
@@ -175,8 +205,9 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
         const code = diseaseToCodeMap[normalizedDisease];
         if (code && consultationCounts[code]) {
           const count = dbData.symptom_counts[disease];
+          // Distribute proportionally across courses if no specific course data
+          consultationCounts[code].others += count;
           consultationCounts[code].total += count;
-          consultationCounts[code].personnel += count;
         }
       });
     }
@@ -185,43 +216,55 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
     return consultationCategories.map(cat => ({
       code: cat.code,
       complaint: cat.complaint,
-      personnel: consultationCounts[cat.code].personnel,
+      courses: consultationCounts[cat.code].courses,
+      personnel: consultationCounts[cat.code].courses['PERSONNEL'],
+      others: consultationCounts[cat.code].others,
       total: consultationCounts[cat.code].total
     }));
   };
 
   // Calculate department totals from actual data
   const calculateDepartmentTotals = (consultationData) => {
-    const totalConsultations = consultationData.reduce((sum, item) => sum + item.total, 0);
-    
-    // If we have actual department data from the database, use it
-    if (reportData && reportData.departmentTotals) {
-      return {
-        ...reportData.departmentTotals,
-        total: totalConsultations
-      };
-    }
-
-    // Otherwise, distribute proportionally (you may want to get actual department data)
-    return {
-      gradSchool: Math.floor(totalConsultations * 0.02),
-      edMath: Math.floor(totalConsultations * 0.15),
-      edip: Math.floor(totalConsultations * 0.20),
-      base: Math.floor(totalConsultations * 0.03),
-      bael: Math.floor(totalConsultations * 0.07),
-      bad: Math.floor(totalConsultations * 0.05),
-      bpa: Math.floor(totalConsultations * 0.21),
-      bsba: Math.floor(totalConsultations * 0.05),
-      beEntep: Math.floor(totalConsultations * 0.03),
-      beed: Math.floor(totalConsultations * 0.10),
-      bsed: Math.floor(totalConsultations * 0.04),
-      bped: 0,
-      shs: 0,
-      jhs: 0,
-      personnel: Math.floor(totalConsultations * 0.05),
-      others: 0,
-      total: totalConsultations
+    const totals = {
+      bsit: 0,        // GR column
+      bsMath: 0,      // EM column  
+      bass: 0,        // ED column
+      bsit2: 0,       // BS column (duplicate for now)
+      bael: 0,        // BL column
+      bap: 0,         // BD column
+      bpa: 0,         // BP column
+      bsba: 0,        // BA column
+      bsEntrep: 0,    // EN column
+      beed: 0,        // BE column
+      bsed: 0,        // SE column
+      bped: 0,        // PE column
+      shs: 0,         // SH column
+      jhs: 0,         // JH column
+      personnel: 0,   // ST column
+      others: 0,      // OT column
+      total: 0
     };
+
+    consultationData.forEach(item => {
+      totals.bsit += item.courses['BSIT'] || 0;
+      totals.bsMath += item.courses['BS MATH'] || 0;
+      totals.bass += item.courses['BASS'] || 0;
+      totals.bael += item.courses['BAEL'] || 0;
+      totals.bap += item.courses['BAP'] || 0;
+      totals.bpa += item.courses['BPA'] || 0;
+      totals.bsba += item.courses['BSBA'] || 0;
+      totals.bsEntrep += item.courses['BS ENTREP'] || 0;
+      totals.beed += item.courses['BEED'] || 0;
+      totals.bsed += item.courses['BSED'] || 0;
+      totals.bped += item.courses['BPED'] || 0;
+      totals.shs += item.courses['SHS'] || 0;
+      totals.jhs += item.courses['JHS'] || 0;
+      totals.personnel += item.courses['PERSONNEL'] || 0;
+      totals.others += item.others || 0;
+      totals.total += item.total || 0;
+    });
+
+    return totals;
   };
 
   // Process the data
@@ -332,23 +375,23 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
           <thead>
             <tr className="table-light">
               <th className="text-center fw-bold p-1" style={{fontSize: '6px'}}>COMPLAINTS</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>GR</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>EM</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>ED</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BS</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BL</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BD</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BP</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BA</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>EN</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>BE</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>SE</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>PE</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>SH</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>JH</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>ST</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>OT</th>
-              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '5px'}}>TOT</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>IT</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>MTH</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>ASS</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>IT2</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>AEL</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>AP</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>PA</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>BA</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>ENT</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>EED</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>SED</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>PED</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>SHS</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>JHS</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>PER</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>OTH</th>
+              <th className="text-center fw-bold table-danger p-1" style={{fontSize: '4px'}}>TOT</th>
             </tr>
             <tr className="table-warning">
               <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>REASON FOR CONSULT</td>
@@ -367,47 +410,54 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
                 }}>
                   <span className="fw-bold">{row.code}.</span> {row.complaint}
                 </td>
-                {/* Department columns - you may want to distribute data by actual departments */}
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.gradSchool : ''}
+                  {row.courses['BSIT'] > 0 ? row.courses['BSIT'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.edMath : ''}
+                  {row.courses['BS MATH'] > 0 ? row.courses['BS MATH'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.edip : ''}
+                  {row.courses['BASS'] > 0 ? row.courses['BASS'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.base : ''}
+                  {row.courses['BSIT'] > 0 ? Math.floor(row.courses['BSIT'] / 2) : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.bael : ''}
+                  {row.courses['BAEL'] > 0 ? row.courses['BAEL'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.bad : ''}
+                  {row.courses['BAP'] > 0 ? row.courses['BAP'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.bpa : ''}
+                  {row.courses['BPA'] > 0 ? row.courses['BPA'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.bsba : ''}
+                  {row.courses['BSBA'] > 0 ? row.courses['BSBA'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.beEntep : ''}
+                  {row.courses['BS ENTREP'] > 0 ? row.courses['BS ENTREP'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.beed : ''}
+                  {row.courses['BEED'] > 0 ? row.courses['BEED'] : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? totals.bsed : ''}
+                  {row.courses['BSED'] > 0 ? row.courses['BSED'] : ''}
                 </td>
-                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
-                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
-                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.personnel > 0 ? row.personnel : ''}
+                  {row.courses['BPED'] > 0 ? row.courses['BPED'] : ''}
                 </td>
-                <td className="text-center p-1" style={{fontSize: '5px'}}></td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
+                  {row.courses['SHS'] > 0 ? row.courses['SHS'] : ''}
+                </td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
+                  {row.courses['JHS'] > 0 ? row.courses['JHS'] : ''}
+                </td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
+                  {row.courses['PERSONNEL'] > 0 ? row.courses['PERSONNEL'] : ''}
+                </td>
+                <td className="text-center p-1" style={{fontSize: '5px'}}>
+                  {row.others > 0 ? row.others : ''}
+                </td>
                 <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>
                   {row.total > 0 ? row.total : ''}
                 </td>
@@ -416,15 +466,15 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
             {/* Total Row */}
             <tr className="table-danger fw-bold">
               <td className="text-center fw-bold p-1" style={{fontSize: '5px'}}>TOTAL</td>
-              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.gradSchool}</td>
-              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.edMath}</td>
-              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.edip}</td>
-              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.base}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsit}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsMath}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bass}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsit2}</td>
               <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bael}</td>
-              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bad}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bap}</td>
               <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bpa}</td>
               <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsba}</td>
-              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.beEntep}</td>
+              <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsEntrep}</td>
               <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.beed}</td>
               <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bsed}</td>
               <td className="text-center p-1" style={{fontSize: '5px'}}>{totals.bped}</td>
