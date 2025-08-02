@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 
 const Reports = ({ onNavigate }) => {
   const [showPrintView, setShowPrintView] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('summary');
@@ -45,33 +46,57 @@ const Reports = ({ onNavigate }) => {
     }
   };
 
-  const handleExport = async () => {
+  const handlePreviewReport = async () => {
     setLoading(true);
     try {
-      // Fetch consultation summary for print
+      // Fetch consultation summary for preview
       const response = await fetch(`http://localhost/api/get_reports.php?type=consultation_summary&range=${selectedDateRange}`);
       const data = await response.json();
       
       if (data.success) {
-        // Transform data for print component
-        const transformedData = transformDataForPrint(data.data);
-        setReportData(transformedData);
-        setShowPrintView(true);
-
-        // Delay to allow render before printing
-        setTimeout(() => {
-          window.print();
-          setShowPrintView(false);
-        }, 500);
+        setReportData(data.data);
+        setShowPreview(true);
+        setShowPrintView(false);
       } else {
         alert('Error fetching report data: ' + data.error);
       }
     } catch (error) {
-      console.error('Error exporting report:', error);
-      alert('Error exporting report. Please try again.');
+      console.error('Error previewing report:', error);
+      alert('Error previewing report. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExport = async () => {
+    if (!reportData) {
+      await handlePreviewReport();
+      return;
+    }
+    
+    setShowPrintView(true);
+    setShowPreview(false);
+
+    // Delay to allow render before printing
+    setTimeout(() => {
+      window.print();
+      setShowPrintView(false);
+    }, 500);
+  };
+
+  const handlePrintFromPreview = () => {
+    setShowPreview(false);
+    setShowPrintView(true);
+    
+    setTimeout(() => {
+      window.print();
+      setShowPrintView(false);
+    }, 100);
+  };
+
+  const handleClosePreview = () => {
+    setShowPreview(false);
+    setReportData(null);
   };
 
   const generateCustomReport = async () => {
@@ -82,9 +107,23 @@ const Reports = ({ onNavigate }) => {
       
       if (data.success) {
         setReportData(data.data);
-        // You can display this data in a modal or separate view
+        // Display data in console for now - you can create a modal or separate view
         console.log('Report data:', data.data);
-        alert('Report generated successfully! Check console for data.');
+        
+        // Show a summary alert
+        let message = 'Report generated successfully!\n\n';
+        if (selectedReportType === 'patient_stats' && data.data.statistics) {
+          message += `Total Patients: ${data.data.statistics.total_patients}\n`;
+          message += `Total Consultations: ${data.data.statistics.total_consultations}\n`;
+          message += `Average Temperature: ${data.data.statistics.avg_temperature ? Number(data.data.statistics.avg_temperature).toFixed(1) + '°C' : 'N/A'}`;
+        } else if (selectedReportType === 'health_trends' && data.data.trends) {
+          message += `Health trends data for ${data.data.trends.length} days retrieved.`;
+        } else if (selectedReportType === 'summary' && data.data.summary) {
+          message += `Total Records: ${data.data.summary.total_records}\n`;
+          message += `Unique Patients: ${data.data.summary.unique_patients}`;
+        }
+        
+        alert(message);
       } else {
         alert('Error generating report: ' + data.error);
       }
@@ -94,65 +133,6 @@ const Reports = ({ onNavigate }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const transformDataForPrint = (data) => {
-    // Transform the database data into the format expected by the Print component
-    const consultationData = [];
-    const symptomCounts = data.symptom_counts || {};
-    
-    // Map common diseases to complaint codes
-    const diseaseMapping = {
-      'Fever': { code: 'A', complaint: 'Fever' },
-      'Cough': { code: 'C', complaint: 'Cough and colds' },
-      'Headache': { code: 'G', complaint: 'Headache' },
-      'Abdominal Pain': { code: 'R', complaint: 'Abdominal pain/Gastralgia' },
-      'Diarrhea': { code: 'Y', complaint: 'LBM/diarrhea' },
-      'Skin Problems': { code: 'FF', complaint: 'Skin Illness' },
-      'Foot Pain': { code: 'HH', complaint: 'Foot pain' },
-      'High Blood Pressure': { code: 'LL', complaint: 'For BP' },
-      'Physical Examination': { code: 'QQ', complaint: 'PE for Employee' },
-      'ROTC Examination': { code: 'SS', complaint: 'PE for ROTC' }
-    };
-
-    // Create consultation data array
-    Object.keys(diseaseMapping).forEach(disease => {
-      const mapping = diseaseMapping[disease];
-      const count = symptomCounts[disease] || 0;
-      
-      consultationData.push({
-        code: mapping.code,
-        complaint: mapping.complaint,
-        personnel: count,
-        total: count
-      });
-    });
-
-    // Calculate totals (you might want to fetch actual department data)
-    const totalConsultations = Object.values(symptomCounts).reduce((sum, count) => sum + count, 0);
-    
-    return {
-      consultationData,
-      totals: {
-        gradSchool: Math.floor(totalConsultations * 0.02),
-        edMath: Math.floor(totalConsultations * 0.15),
-        edip: Math.floor(totalConsultations * 0.20),
-        base: Math.floor(totalConsultations * 0.03),
-        bael: Math.floor(totalConsultations * 0.07),
-        bad: Math.floor(totalConsultations * 0.05),
-        bpa: Math.floor(totalConsultations * 0.21),
-        bsba: Math.floor(totalConsultations * 0.05),
-        beEntep: Math.floor(totalConsultations * 0.03),
-        beed: Math.floor(totalConsultations * 0.10),
-        bsed: Math.floor(totalConsultations * 0.04),
-        bped: 0,
-        shs: 0,
-        jhs: 0,
-        personnel: Math.floor(totalConsultations * 0.05),
-        others: 0,
-        total: totalConsultations
-      }
-    };
   };
 
   const formatNumber = (num) => {
@@ -168,12 +148,12 @@ const Reports = ({ onNavigate }) => {
             title="Reports Dashboard"
             subtitle="View and export system reports"
             showExportButton={true}
-            onExport={handleExport}
+            onExport={handlePreviewReport}
             onSidebarToggle={() => {}}
           />
 
           {/* Dashboard Interface */}
-          {!showPrintView && (
+          {!showPrintView && !showPreview && (
             <div className="bg-white shadow rounded-3 p-4 mt-4">
               {/* Summary Cards */}
               <div className="row row-cols-1 row-cols-md-3 g-4 mb-4">
@@ -237,10 +217,10 @@ const Reports = ({ onNavigate }) => {
                     </p>
                     <button 
                       className="mt-3 w-100 btn btn-purple text-white" 
-                      onClick={handleExport}
+                      onClick={handlePreviewReport}
                       disabled={loading}
                     >
-                      {loading ? 'Exporting...' : 'Export Data'}
+                      {loading ? 'Loading...' : 'Preview Report'}
                     </button>
                   </div>
                 </div>
@@ -313,18 +293,39 @@ const Reports = ({ onNavigate }) => {
                     </select>
                   </div>
                 </div>
-                <button 
-                  className="mt-4 btn btn-primary"
-                  onClick={generateCustomReport}
-                  disabled={loading}
-                >
-                  {loading ? 'Generating...' : 'Generate Report'}
-                </button>
+                <div className="mt-4 d-flex gap-2">
+                  <button 
+                    className="btn btn-primary"
+                    onClick={generateCustomReport}
+                    disabled={loading}
+                  >
+                    {loading ? 'Generating...' : 'Generate Report'}
+                  </button>
+                  <button 
+                    className="btn btn-outline-primary"
+                    onClick={handlePreviewReport}
+                    disabled={loading}
+                  >
+                    {loading ? 'Loading...' : 'Preview Consultation Report'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Printable Report */}
+          {/* Preview Mode */}
+          {showPreview && !showPrintView && (
+            <div className="bg-white shadow rounded-3 p-4 mt-4">
+              <Print 
+                reportData={reportData} 
+                isPreview={true}
+                onPrint={handlePrintFromPreview}
+                onClose={handleClosePreview}
+              />
+            </div>
+          )}
+
+          {/* Print Mode */}
           {showPrintView && (
             <div ref={printRef} className="printable-content bg-white p-4 mt-4">
               <Print reportData={reportData} />

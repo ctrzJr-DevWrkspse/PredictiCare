@@ -1,76 +1,232 @@
 import React from 'react';
 
 const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
-  // Default data if no reportData is provided
-  const consultationData = reportData?.consultationData || [
-    { code: 'A', complaint: 'Fever', personnel: 1, total: 1 },
-    { code: 'B', complaint: 'Chill', personnel: 0, total: 0 },
-    { code: 'C', complaint: 'Cough and colds', personnel: 6, total: 6 },
-    { code: 'D', complaint: 'Sore throat', personnel: 0, total: 0 },
-    { code: 'E', complaint: 'Difficulty of Breathing', personnel: 0, total: 0 },
-    { code: 'F', complaint: 'Dysphagia', personnel: 0, total: 0 },
-    { code: 'G', complaint: 'Headache', personnel: 1, total: 1 },
-    { code: 'H', complaint: 'Dizziness', personnel: 0, total: 0 },
-    { code: 'I', complaint: 'Eye Irritation/redness', personnel: 0, total: 0 },
-    { code: 'J', complaint: 'Swelling eye lid', personnel: 0, total: 0 },
-    { code: 'K', complaint: 'Ear pain', personnel: 0, total: 0 },
-    { code: 'L', complaint: 'Otitis', personnel: 0, total: 0 },
-    { code: 'M', complaint: 'Otitis/earache', personnel: 0, total: 0 },
-    { code: 'N', complaint: 'Toothache', personnel: 0, total: 0 },
-    { code: 'O', complaint: 'Stomachache', personnel: 0, total: 0 },
-    { code: 'P', complaint: 'Nausea and vomiting', personnel: 0, total: 0 },
-    { code: 'Q', complaint: 'Epigastric pain', personnel: 0, total: 0 },
-    { code: 'R', complaint: 'Abdominal pain/Gastralgia', personnel: 1, total: 1 },
-    { code: 'S', complaint: 'Indigestion/pain', personnel: 0, total: 0 },
-    { code: 'T', complaint: 'Vomiting', personnel: 0, total: 0 },
-    { code: 'U', complaint: 'Stomach ache', personnel: 0, total: 0 },
-    { code: 'V', complaint: 'Appetite', personnel: 0, total: 0 },
-    { code: 'W', complaint: 'Migraine', personnel: 0, total: 0 },
-    { code: 'X', complaint: 'Shoulder Pain', personnel: 0, total: 0 },
-    { code: 'Y', complaint: 'LBM/diarrhea', personnel: 2, total: 2 },
-    { code: 'Z', complaint: 'Constipation', personnel: 0, total: 0 },
-    { code: 'AA', complaint: 'Gastroenteritis', personnel: 0, total: 0 },
-    { code: 'BB', complaint: 'Body Weakness', personnel: 0, total: 0 },
-    { code: 'CC', complaint: 'Nape Pain', personnel: 0, total: 0 },
-    { code: 'DD', complaint: 'Back Pain', personnel: 0, total: 0 },
-    { code: 'EE', complaint: 'Rashes', personnel: 0, total: 0 },
-    { code: 'FF', complaint: 'Skin Illness', personnel: 1, total: 1 },
-    { code: 'GG', complaint: 'Laceration', personnel: 0, total: 0 },
-    { code: 'HH', complaint: 'Foot pain', personnel: 2, total: 2 },
-    { code: 'II', complaint: 'Leg pain', personnel: 0, total: 0 },
-    { code: 'JJ', complaint: 'Infected wound', personnel: 0, total: 0 },
-    { code: 'KK', complaint: 'Burn', personnel: 0, total: 0 },
-    { code: 'LL', complaint: 'For BP', personnel: 13, total: 13 },
-    { code: 'MM', complaint: 'Referral', personnel: 0, total: 0 },
-    { code: 'NN', complaint: 'For FBS/RBS', personnel: 0, total: 0 },
-    { code: 'OO', complaint: 'For Medicine', personnel: 0, total: 0 },
-    { code: 'PP', complaint: 'PE for Seminar', personnel: 0, total: 0 },
-    { code: 'QQ', complaint: 'PE for Employee', personnel: 238, total: 238 },
-    { code: 'RR', complaint: 'PE for Students/ROTC/NSTP', personnel: 0, total: 0 },
-    { code: 'SS', complaint: 'PE for ROTC', personnel: 4, total: 4 },
-    { code: 'TT', complaint: 'PE for Extension/Practicum', personnel: 0, total: 0 },
-    { code: 'UU', complaint: 'PE for NSTP', personnel: 0, total: 0 }
-  ];
+  // Process actual database data into consultation format
+  const processConsultationData = (dbData) => {
+    // Define the complete consultation categories with codes
+    const consultationCategories = [
+      { code: 'A', complaint: 'Fever' },
+      { code: 'B', complaint: 'Chill' },
+      { code: 'C', complaint: 'Cough and colds' },
+      { code: 'D', complaint: 'Sore throat' },
+      { code: 'E', complaint: 'Difficulty of Breathing' },
+      { code: 'F', complaint: 'Dysphagia' },
+      { code: 'G', complaint: 'Headache' },
+      { code: 'H', complaint: 'Dizziness' },
+      { code: 'I', complaint: 'Eye Irritation/redness' },
+      { code: 'J', complaint: 'Swelling eye lid' },
+      { code: 'K', complaint: 'Ear pain' },
+      { code: 'L', complaint: 'Otitis' },
+      { code: 'M', complaint: 'Otitis/earache' },
+      { code: 'N', complaint: 'Toothache' },
+      { code: 'O', complaint: 'Stomachache' },
+      { code: 'P', complaint: 'Nausea and vomiting' },
+      { code: 'Q', complaint: 'Epigastric pain' },
+      { code: 'R', complaint: 'Abdominal pain/Gastralgia' },
+      { code: 'S', complaint: 'Indigestion/pain' },
+      { code: 'T', complaint: 'Vomiting' },
+      { code: 'U', complaint: 'Stomach ache' },
+      { code: 'V', complaint: 'Appetite' },
+      { code: 'W', complaint: 'Migraine' },
+      { code: 'X', complaint: 'Shoulder Pain' },
+      { code: 'Y', complaint: 'LBM/diarrhea' },
+      { code: 'Z', complaint: 'Constipation' },
+      { code: 'AA', complaint: 'Gastroenteritis' },
+      { code: 'BB', complaint: 'Body Weakness' },
+      { code: 'CC', complaint: 'Nape Pain' },
+      { code: 'DD', complaint: 'Back Pain' },
+      { code: 'EE', complaint: 'Rashes' },
+      { code: 'FF', complaint: 'Skin Illness' },
+      { code: 'GG', complaint: 'Laceration' },
+      { code: 'HH', complaint: 'Foot pain' },
+      { code: 'II', complaint: 'Leg pain' },
+      { code: 'JJ', complaint: 'Infected wound' },
+      { code: 'KK', complaint: 'Burn' },
+      { code: 'LL', complaint: 'For BP' },
+      { code: 'MM', complaint: 'Referral' },
+      { code: 'NN', complaint: 'For FBS/RBS' },
+      { code: 'OO', complaint: 'For Medicine' },
+      { code: 'PP', complaint: 'PE for Seminar' },
+      { code: 'QQ', complaint: 'PE for Employee' },
+      { code: 'RR', complaint: 'PE for Students/ROTC/NSTP' },
+      { code: 'SS', complaint: 'PE for ROTC' },
+      { code: 'TT', complaint: 'PE for Extension/Practicum' },
+      { code: 'UU', complaint: 'PE for NSTP' }
+    ];
 
-  const totals = reportData?.totals || {
-    gradSchool: 6,
-    edMath: 116,
-    edip: 161,
-    base: 21,
-    bael: 53,
-    bad: 38,
-    bpa: 159,
-    bsba: 36,
-    beEntep: 21,
-    beed: 76,
-    bsed: 30,
-    bped: 0,
-    shs: 0,
-    jhs: 0,
-    personnel: 31,
-    others: 0,
-    total: 748
+    // Map database diseases/symptoms to consultation codes
+    const diseaseToCodeMap = {
+      'fever': 'A',
+      'chill': 'B', 
+      'chills': 'B',
+      'cough': 'C',
+      'cold': 'C',
+      'colds': 'C',
+      'runny nose': 'C',
+      'sore throat': 'D',
+      'difficulty breathing': 'E',
+      'breathing difficulty': 'E',
+      'dysphagia': 'F',
+      'headache': 'G',
+      'dizziness': 'H',
+      'eye irritation': 'I',
+      'eye redness': 'I',
+      'swelling eye': 'J',
+      'ear pain': 'K',
+      'otitis': 'L',
+      'earache': 'M',
+      'toothache': 'N',
+      'stomachache': 'O',
+      'stomach ache': 'U',
+      'nausea': 'P',
+      'vomiting': 'T',
+      'epigastric pain': 'Q',
+      'abdominal pain': 'R',
+      'gastralgia': 'R',
+      'stomach pain': 'R',
+      'indigestion': 'S',
+      'appetite': 'V',
+      'migraine': 'W',
+      'shoulder pain': 'X',
+      'diarrhea': 'Y',
+      'lbm': 'Y',
+      'constipation': 'Z',
+      'gastroenteritis': 'AA',
+      'body weakness': 'BB',
+      'weakness': 'BB',
+      'nape pain': 'CC',
+      'back pain': 'DD',
+      'rashes': 'EE',
+      'rash': 'EE',
+      'skin illness': 'FF',
+      'skin problems': 'FF',
+      'skin rash': 'EE',
+      'itching': 'FF',
+      'laceration': 'GG',
+      'foot pain': 'HH',
+      'leg pain': 'II',
+      'infected wound': 'JJ',
+      'burn': 'KK',
+      'blood pressure': 'LL',
+      'bp': 'LL',
+      'high blood pressure': 'LL',
+      'referral': 'MM',
+      'fbs': 'NN',
+      'rbs': 'NN',
+      'medicine': 'OO',
+      'physical examination': 'QQ',
+      'pe': 'QQ',
+      'medical exam': 'QQ',
+      'rotc': 'SS',
+      'rotc exam': 'SS',
+      'rotc medical': 'SS',
+      'nstp': 'UU',
+      'seminar': 'PP',
+      'extension': 'TT',
+      'practicum': 'TT'
+    };
+
+    // Initialize counts for each category
+    const consultationCounts = {};
+    consultationCategories.forEach(cat => {
+      consultationCounts[cat.code] = { 
+        ...cat, 
+        personnel: 0, 
+        students: 0, 
+        total: 0 
+      };
+    });
+
+    // Process database records
+    if (dbData && dbData.consultations) {
+      dbData.consultations.forEach(record => {
+        // Process symptoms
+        if (record.symptoms && Array.isArray(record.symptoms)) {
+          record.symptoms.forEach(symptom => {
+            const normalizedSymptom = symptom.toLowerCase().trim();
+            const code = diseaseToCodeMap[normalizedSymptom];
+            if (code && consultationCounts[code]) {
+              consultationCounts[code].total += record.count || 1;
+              consultationCounts[code].personnel += record.count || 1;
+            }
+          });
+        }
+
+        // Process predictions/diseases
+        if (record.prediction && Array.isArray(record.prediction)) {
+          record.prediction.forEach(pred => {
+            if (pred.disease) {
+              const normalizedDisease = pred.disease.toLowerCase().trim();
+              const code = diseaseToCodeMap[normalizedDisease];
+              if (code && consultationCounts[code]) {
+                consultationCounts[code].total += record.count || 1;
+                consultationCounts[code].personnel += record.count || 1;
+              }
+            }
+          });
+        }
+      });
+    }
+
+    // Process symptom counts if available
+    if (dbData && dbData.symptom_counts) {
+      Object.keys(dbData.symptom_counts).forEach(disease => {
+        const normalizedDisease = disease.toLowerCase().trim();
+        const code = diseaseToCodeMap[normalizedDisease];
+        if (code && consultationCounts[code]) {
+          const count = dbData.symptom_counts[disease];
+          consultationCounts[code].total += count;
+          consultationCounts[code].personnel += count;
+        }
+      });
+    }
+
+    // Convert to array format for display
+    return consultationCategories.map(cat => ({
+      code: cat.code,
+      complaint: cat.complaint,
+      personnel: consultationCounts[cat.code].personnel,
+      total: consultationCounts[cat.code].total
+    }));
   };
+
+  // Calculate department totals from actual data
+  const calculateDepartmentTotals = (consultationData) => {
+    const totalConsultations = consultationData.reduce((sum, item) => sum + item.total, 0);
+    
+    // If we have actual department data from the database, use it
+    if (reportData && reportData.departmentTotals) {
+      return {
+        ...reportData.departmentTotals,
+        total: totalConsultations
+      };
+    }
+
+    // Otherwise, distribute proportionally (you may want to get actual department data)
+    return {
+      gradSchool: Math.floor(totalConsultations * 0.02),
+      edMath: Math.floor(totalConsultations * 0.15),
+      edip: Math.floor(totalConsultations * 0.20),
+      base: Math.floor(totalConsultations * 0.03),
+      bael: Math.floor(totalConsultations * 0.07),
+      bad: Math.floor(totalConsultations * 0.05),
+      bpa: Math.floor(totalConsultations * 0.21),
+      bsba: Math.floor(totalConsultations * 0.05),
+      beEntep: Math.floor(totalConsultations * 0.03),
+      beed: Math.floor(totalConsultations * 0.10),
+      bsed: Math.floor(totalConsultations * 0.04),
+      bped: 0,
+      shs: 0,
+      jhs: 0,
+      personnel: Math.floor(totalConsultations * 0.05),
+      others: 0,
+      total: totalConsultations
+    };
+  };
+
+  // Process the data
+  const consultationData = reportData ? processConsultationData(reportData) : [];
+  const totals = calculateDepartmentTotals(consultationData);
 
   const handlePrint = () => {
     if (onPrint) {
@@ -106,6 +262,9 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
           </div>
           <small className="text-muted">
             Review the report below and click "Print Report" when ready.
+            {reportData && reportData.date_range && (
+              <span> | Date Range: {reportData.date_range.start} to {reportData.date_range.end}</span>
+            )}
           </small>
         </div>
       )}
@@ -133,6 +292,11 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
             <div style={{fontSize: '7px'}}>
               Tagudin Campus - Health Services Consultation Report
             </div>
+            {reportData && reportData.date_range && (
+              <div style={{fontSize: '6px', color: '#666'}}>
+                Period: {new Date(reportData.date_range.start).toLocaleDateString()} - {new Date(reportData.date_range.end).toLocaleDateString()}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -203,38 +367,39 @@ const Print = ({ reportData, isPreview = false, onPrint, onClose }) => {
                 }}>
                   <span className="fw-bold">{row.code}.</span> {row.complaint}
                 </td>
+                {/* Department columns - you may want to distribute data by actual departments */}
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '6' : ''}
+                  {row.code === 'QQ' ? totals.gradSchool : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '116' : ''}
+                  {row.code === 'QQ' ? totals.edMath : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '161' : ''}
+                  {row.code === 'QQ' ? totals.edip : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '21' : ''}
+                  {row.code === 'QQ' ? totals.base : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '53' : ''}
+                  {row.code === 'QQ' ? totals.bael : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '38' : ''}
+                  {row.code === 'QQ' ? totals.bad : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '159' : ''}
+                  {row.code === 'QQ' ? totals.bpa : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '36' : ''}
+                  {row.code === 'QQ' ? totals.bsba : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '21' : ''}
+                  {row.code === 'QQ' ? totals.beEntep : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '76' : ''}
+                  {row.code === 'QQ' ? totals.beed : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}>
-                  {row.code === 'QQ' ? '30' : ''}
+                  {row.code === 'QQ' ? totals.bsed : ''}
                 </td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}></td>
                 <td className="text-center p-1" style={{fontSize: '5px'}}></td>
